@@ -42,7 +42,7 @@ const handlePayment = async (book) => {
       }
 
       const options = {
-        key: "rzp_test_SP0E1la6O0DJmp", // ⚠️ Check if this matches your .env RAZORPAY_KEY_ID
+        key: "rzp_live_SYW8QthSe8OsG0", 
         amount: data.order.amount,
         currency: "INR",
         name: "Cosmic Sacred",

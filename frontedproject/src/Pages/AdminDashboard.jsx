@@ -4,13 +4,14 @@ import { BASE_URL } from "../APPpath";
 import { 
   LogOut, Users, BookOpen, Trash2, Plus, 
   Image as ImageIcon, Loader2, FileText, Globe, Music, Mic, 
-  Play, AudioLines, Headset, CheckCircle2, Eye 
+  Play, AudioLines, Headset, CheckCircle2, Eye, Menu, X 
 } from "lucide-react";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("users");
   const [isUploading, setIsUploading] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
 
   // Data States
   const [users, setUsers] = useState([]);
@@ -70,7 +71,7 @@ export default function AdminDashboard() {
     } else if (type === 'audio') {
       endpoint = `/api/audio/delete-audio/${id}`;
     } else if (type === 'user') {
-      endpoint = `/api/users/delete/${id}`; 
+      endpoint = `/api/delete/${id}`; 
     }
 
     try {
@@ -149,12 +150,33 @@ export default function AdminDashboard() {
 
   const handleLogout = () => { localStorage.clear(); navigate("/"); };
 
+  // Helper to switch tabs on mobile
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div className="flex min-h-screen bg-[#05020a] text-slate-300 font-sans">
       
+      {/* --- MOBILE TOP BAR --- */}
+      <div className="lg:hidden fixed top-0 w-full bg-[#090514] border-b border-white/5 p-4 flex justify-between items-center z-[60]">
+        <div className="flex items-center gap-2">
+           <Mic size={20} className="text-indigo-500" />
+           <span className="font-black text-white italic tracking-tighter">COSMIC</span>
+        </div>
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-indigo-400">
+          {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+      </div>
+
       {/* --- SIDEBAR --- */}
-      <aside className="w-72 bg-[#090514] border-r border-white/5 flex flex-col fixed h-full z-50">
-        <div className="p-10 flex items-center gap-3">
+      <aside className={`
+        fixed inset-y-0 left-0 w-72 bg-[#090514] border-r border-white/5 flex flex-col z-[55] transition-transform duration-300 ease-in-out
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        lg:h-full
+      `}>
+        <div className="p-10 hidden lg:flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/20">
              <Mic size={24} className="text-white" />
           </div>
@@ -164,7 +186,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <nav className="mt-10 px-4 space-y-2">
+        <nav className="mt-24 lg:mt-10 px-4 space-y-2">
           {[
             { id: "users", label: "Registry", icon: Users },
             { id: "workbooks", label: "Library", icon: BookOpen },
@@ -172,7 +194,7 @@ export default function AdminDashboard() {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group ${
                 activeTab === tab.id 
                 ? "bg-white/5 text-white shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] border border-white/10" 
@@ -196,51 +218,53 @@ export default function AdminDashboard() {
       </aside>
 
       {/* --- CONTENT AREA --- */}
-      <main className="flex-1 ml-72 p-12 overflow-y-auto">
+      <main className="flex-1 lg:ml-72 p-6 lg:p-12 overflow-y-auto mt-16 lg:mt-0">
         
-        <div className="flex justify-between items-start mb-16">
+        <div className="flex justify-between items-start mb-10 lg:mb-16">
           <div>
-            <h2 className="text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
+            <h2 className="text-3xl lg:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
               {activeTab === 'users' && 'User Registry'}
               {activeTab === 'workbooks' && 'Library Assets'}
               {activeTab === 'lightlanguage' && 'Audio Transmissions'}
             </h2>
-            <p className="text-slate-500 text-xs font-bold tracking-[0.4em] uppercase mt-4">Command Center / {activeTab}</p>
+            <p className="text-slate-500 text-[10px] lg:text-xs font-bold tracking-[0.4em] uppercase mt-4">Command Center / {activeTab}</p>
           </div>
         </div>
 
         {/* 1. USERS REGISTRY */}
         {activeTab === "users" && (
-          <div className="bg-[#0c0816] border border-white/5 rounded-[40px] overflow-hidden shadow-3xl animate-in fade-in slide-in-from-bottom-4">
-             <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-white/[0.02] text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em]">
-                    <th className="p-10">Soul Name</th>
-                    <th className="p-10">Identity (Email)</th>
-                    <th className="p-10 text-right">Access</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {users.map(u => (
-                    <tr key={u._id} className="group hover:bg-white/[0.01] transition-all">
-                      <td className="p-10 text-white font-bold tracking-tight">{u.name}</td>
-                      <td className="p-10 text-slate-500 font-medium">{u.email}</td>
-                      <td className="p-10 text-right">
-                        <button onClick={() => deleteItem('user', u._id)} className="p-4 bg-red-500/5 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100">
-                          <Trash2 size={20} />
-                        </button>
-                      </td>
+          <div className="bg-[#0c0816] border border-white/5 rounded-[30px] lg:rounded-[40px] overflow-hidden shadow-3xl animate-in fade-in slide-in-from-bottom-4">
+             <div className="overflow-x-auto">
+               <table className="w-full text-left border-collapse min-w-[600px]">
+                  <thead>
+                    <tr className="bg-white/[0.02] text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em]">
+                      <th className="p-6 lg:p-10">Soul Name</th>
+                      <th className="p-6 lg:p-10">Identity (Email)</th>
+                      <th className="p-6 lg:p-10 text-right">Access</th>
                     </tr>
-                  ))}
-                </tbody>
-             </table>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {users.map(u => (
+                      <tr key={u._id} className="group hover:bg-white/[0.01] transition-all">
+                        <td className="p-6 lg:p-10 text-white font-bold tracking-tight">{u.name}</td>
+                        <td className="p-6 lg:p-10 text-slate-500 font-medium">{u.email}</td>
+                        <td className="p-6 lg:p-10 text-right">
+                          <button onClick={() => deleteItem('user', u._id)} className="p-4 bg-red-500/5 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all lg:opacity-0 group-hover:opacity-100">
+                            <Trash2 size={20} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+               </table>
+             </div>
           </div>
         )}
 
-        {/* 2. WORKBOOKS / LIBRARY (LIST STYLE UI) */}
+        {/* 2. WORKBOOKS / LIBRARY */}
         {activeTab === "workbooks" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in fade-in zoom-in-95">
-             <div className="lg:col-span-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 animate-in fade-in zoom-in-95">
+             <div className="lg:col-span-4 order-2 lg:order-1">
                 <div className="bg-[#0c0816] p-8 rounded-[32px] border border-white/10 sticky top-12 shadow-2xl">
                    <h3 className="text-white text-lg font-black italic mb-6 flex items-center gap-3">
                       <Plus className="text-indigo-500" size={20} /> New Workbook
@@ -265,14 +289,14 @@ export default function AdminDashboard() {
                    </form>
                 </div>
              </div>
-             <div className="lg:col-span-8 space-y-4">
+             <div className="lg:col-span-8 space-y-4 order-1 lg:order-2">
                 {workbooks.map(b => (
-                  <div key={b._id} className="group flex items-center gap-6 bg-[#0c0816] p-4 rounded-[24px] border border-white/5 hover:border-indigo-500/30 transition-all shadow-xl">
+                  <div key={b._id} className="group flex flex-col sm:flex-row items-center gap-6 bg-[#0c0816] p-4 rounded-[24px] border border-white/5 hover:border-indigo-500/30 transition-all shadow-xl">
                      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                         <img src={b.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                      </div>
-                     <div className="flex-1">
-                        <div className="flex items-center gap-2">
+                     <div className="flex-1 text-center sm:text-left">
+                        <div className="flex flex-col sm:flex-row items-center gap-2">
                            <h4 className="text-white text-md font-black uppercase tracking-tight italic">{b.title}</h4>
                            <span className="bg-indigo-500/10 text-indigo-400 text-[8px] font-black px-2 py-0.5 rounded uppercase border border-indigo-500/20">Book</span>
                         </div>
@@ -291,8 +315,8 @@ export default function AdminDashboard() {
 
         {/* 3. AUDIO TRANSMISSIONS */}
         {activeTab === "lightlanguage" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-in fade-in zoom-in-95">
-             <div className="lg:col-span-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 animate-in fade-in zoom-in-95">
+             <div className="lg:col-span-4 order-2 lg:order-1">
                 <div className="bg-[#0c0816] p-8 rounded-[32px] border border-white/10 sticky top-12 shadow-2xl">
                    <h3 className="text-white text-lg font-black italic mb-6 flex items-center gap-3">
                      <Mic className="text-purple-500" size={20} /> Transmit Audio
@@ -316,15 +340,15 @@ export default function AdminDashboard() {
                    </form>
                 </div>
              </div>
-             <div className="lg:col-span-8 space-y-4">
+             <div className="lg:col-span-8 space-y-4 order-1 lg:order-2">
                 {audios.map(a => (
-                  <div key={a._id} className="group flex items-center gap-8 bg-[#0c0816] p-6 rounded-[32px] border border-white/5 hover:border-purple-500/30 transition-all shadow-xl">
+                  <div key={a._id} className="group flex flex-col sm:flex-row items-center gap-8 bg-[#0c0816] p-6 rounded-[32px] border border-white/5 hover:border-purple-500/30 transition-all shadow-xl">
                      <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0">
                         <img src={a.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                      </div>
-                     <div className="flex-1">
+                     <div className="flex-1 text-center sm:text-left">
                         <h4 className="text-white text-md font-black uppercase tracking-tight italic leading-none">{a.title}</h4>
-                        <div className="flex items-center gap-3 mt-2">
+                        <div className="flex items-center justify-center sm:justify-start gap-3 mt-2">
                            <span className="text-[10px] font-black text-purple-400 uppercase bg-purple-500/5 px-2 py-0.5 rounded border border-purple-500/10">High Freq</span>
                            <span className="text-[10px] text-slate-500 font-bold">₹{a.price}</span>
                         </div>
@@ -341,6 +365,14 @@ export default function AdminDashboard() {
           </div>
         )}
       </main>
+
+      {/* Overlay for mobile when menu is open */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[50] lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
+      )}
     </div>
   );
 }

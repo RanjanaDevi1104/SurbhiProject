@@ -10,7 +10,7 @@ export default function Logout() {
     
     setTimeout(() => {
       localStorage.clear(); 
-      window.location.href = "/"; // Login page par bhejein aur refresh karein
+      window.location.href = "/"; 
     }, 1000);
   };
 

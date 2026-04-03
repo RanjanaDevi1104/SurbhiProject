@@ -35,7 +35,7 @@ export default function LightLanguage() {
     if (!data.success) return alert("Order failed: " + data.message);
 
     const options = {
-      key: "rzp_test_SP0E1la6O0DJmp",
+      key: "rzp_live_SYW8QthSe8OsG0",
       amount: data.order.amount,
       currency: "INR",
       name: "Cosmic Sacred",
