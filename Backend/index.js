@@ -1,13 +1,15 @@
+
+
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import router from './Router/LoginRouter.js'
 import router2 from './Router/imageRouter.js'
-// import PaymentRoute from './Router/PaymentRoute.js'
 import AudioRoute from './Router/AudioRoute.js'
 
-dotenv.config()
 const app = express();
 app.use(express.json());
 app.use(cors({

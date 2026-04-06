@@ -4,14 +4,14 @@ import { BASE_URL } from "../APPpath";
 import { 
   LogOut, Users, BookOpen, Trash2, Plus, 
   Image as ImageIcon, Loader2, FileText, Globe, Music, Mic, 
-  Play, AudioLines, Headset, CheckCircle2, Eye, Menu, X 
+  Play, AudioLines, Eye, Menu, X 
 } from "lucide-react";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("users");
   const [isUploading, setIsUploading] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Data States
   const [users, setUsers] = useState([]);
@@ -61,64 +61,50 @@ export default function AdminDashboard() {
     } catch (err) { console.error(err); }
   };
 
-  // --- DELETE FUNCTION (Unified) ---
+  // --- DELETE FUNCTION ---
   const deleteItem = async (type, id) => {
-    if (!window.confirm(`Are you sure you want to delete this ${type} permanently?`)) return;
-
-    let endpoint = "";
-    if (type === 'workbook') {
-      endpoint = `/api/delete-workbook/${id}`; 
-    } else if (type === 'audio') {
-      endpoint = `/api/audio/delete-audio/${id}`;
-    } else if (type === 'user') {
-      endpoint = `/api/delete/${id}`; 
-    }
+    if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
+    let endpoint = type === 'workbook' ? `/api/delete-workbook/${id}` : type === 'audio' ? `/api/audio/delete-audio/${id}` : `/api/delete/${id}`;
 
     try {
       const res = await fetch(`${BASE_URL}${endpoint}`, {
         method: "DELETE",
-        headers: { 
-          "token": localStorage.getItem("token"),
-          "Content-Type": "application/json"
-        }
+        headers: { "token": localStorage.getItem("token") }
       });
-
-      const data = await res.json();
-
       if (res.ok) {
-        alert(`${type} deleted successfully!`);
-        if (type === 'workbook') fetchWorkbooks();
-        if (type === 'audio') fetchAudios();
-        if (type === 'user') fetchUsers();
-      } else {
-        alert(`Error: ${data.message || "Failed to delete"}`);
+        alert(`${type} deleted!`);
+        type === 'workbook' ? fetchWorkbooks() : type === 'audio' ? fetchAudios() : fetchUsers();
       }
-    } catch (err) {
-      console.error("Delete Error:", err);
-      alert("Network error: Could not connect to server");
-    }
+    } catch (err) { alert("Delete failed"); }
   };
 
-  // --- UPLOAD HANDLERS ---
+  // --- UPLOAD HANDLERS (FIXED) ---
   const handleAddWorkbook = async (e) => {
     e.preventDefault();
     if (!imageFile || !pdfFile) return alert("Select both Image and PDF");
     setIsUploading(true);
+
     const formData = new FormData();
     formData.append("title", newBook.title);
     formData.append("price", newBook.price);
     formData.append("description", newBook.description);
-    formData.append("image", imageFile); 
-    formData.append("pdf", pdfFile);     
+    formData.append("image", imageFile); // Matches backend field 'image'
+    formData.append("pdf", pdfFile);     // Matches backend field 'pdf'
+
     try {
       const res = await fetch(`${BASE_URL}/api/upload`, {
-        method: "POST", headers: { "token": localStorage.getItem("token") }, body: formData,
+        method: "POST",
+        headers: { "token": localStorage.getItem("token") }, // NOTE: NO Content-Type here!
+        body: formData,
       });
       if (res.ok) {
         alert("Workbook Published!");
         setNewBook({ title: "", price: "", description: "" });
         setImageFile(null); setPdfFile(null); setPreview(null);
         fetchWorkbooks();
+      } else {
+        const errorData = await res.json();
+        alert("Error: " + errorData.message);
       }
     } catch (err) { alert("Upload failed"); }
     finally { setIsUploading(false); }
@@ -128,15 +114,19 @@ export default function AdminDashboard() {
     e.preventDefault();
     if (!audioImage || !audioFile) return alert("Select Thumbnail and MP3");
     setIsUploading(true);
+
     const formData = new FormData();
     formData.append("title", newAudio.title);
     formData.append("price", newAudio.price);
     formData.append("description", newAudio.description);
-    formData.append("image", audioImage); 
-    formData.append("audio", audioFile);     
+    formData.append("image", audioImage); // Matches backend field 'image'
+    formData.append("audio", audioFile);   // Matches backend field 'audio'
+
     try {
       const res = await fetch(`${BASE_URL}/api/audio/upload-audio`, {
-        method: "POST", headers: { "token": localStorage.getItem("token") }, body: formData,
+        method: "POST",
+        headers: { "token": localStorage.getItem("token") },
+        body: formData,
       });
       if (res.ok) {
         alert("Transmission Online!");
@@ -150,16 +140,10 @@ export default function AdminDashboard() {
 
   const handleLogout = () => { localStorage.clear(); navigate("/"); };
 
-  // Helper to switch tabs on mobile
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    setIsMobileMenuOpen(false);
-  };
-
   return (
     <div className="flex min-h-screen bg-[#05020a] text-slate-300 font-sans">
       
-      {/* --- MOBILE TOP BAR --- */}
+      {/* MOBILE BAR */}
       <div className="lg:hidden fixed top-0 w-full bg-[#090514] border-b border-white/5 p-4 flex justify-between items-center z-[60]">
         <div className="flex items-center gap-2">
            <Mic size={20} className="text-indigo-500" />
@@ -170,142 +154,102 @@ export default function AdminDashboard() {
         </button>
       </div>
 
-      {/* --- SIDEBAR --- */}
-      <aside className={`
-        fixed inset-y-0 left-0 w-72 bg-[#090514] border-r border-white/5 flex flex-col z-[55] transition-transform duration-300 ease-in-out
-        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-        lg:h-full
-      `}>
+      {/* SIDEBAR */}
+      <aside className={`fixed inset-y-0 left-0 w-72 bg-[#090514] border-r border-white/5 flex flex-col z-[55] transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
         <div className="p-10 hidden lg:flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/20">
+          <div className="w-12 h-12 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center">
              <Mic size={24} className="text-white" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-tighter italic leading-none">COSMIC</h1>
+            <h1 className="text-xl font-black text-white italic leading-none">COSMIC</h1>
             <p className="text-[10px] text-indigo-400 font-bold tracking-[0.3em] uppercase">Studio</p>
           </div>
         </div>
 
         <nav className="mt-24 lg:mt-10 px-4 space-y-2">
-          {[
-            { id: "users", label: "Registry", icon: Users },
-            { id: "workbooks", label: "Library", icon: BookOpen },
-            { id: "lightlanguage", label: "Audios", icon: Music },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 group ${
-                activeTab === tab.id 
-                ? "bg-white/5 text-white shadow-[inset_0_0_20px_rgba(255,255,255,0.02)] border border-white/10" 
-                : "text-slate-500 hover:text-slate-300 hover:bg-white/[0.02]"
-              }`}
-            >
-              <tab.icon size={20} className={activeTab === tab.id ? "text-indigo-400" : "text-slate-600 group-hover:text-slate-400"} />
+          {[{ id: "users", label: "Registry", icon: Users }, { id: "workbooks", label: "Library", icon: BookOpen }, { id: "lightlanguage", label: "Audios", icon: Music }].map((tab) => (
+            <button key={tab.id} onClick={() => { setActiveTab(tab.id); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl transition-all group ${activeTab === tab.id ? "bg-white/5 text-white border border-white/10" : "text-slate-500 hover:text-slate-300"}`}>
+              <tab.icon size={20} className={activeTab === tab.id ? "text-indigo-400" : "text-slate-600"} />
               <span className="text-xs font-black uppercase tracking-widest">{tab.label}</span>
             </button>
           ))}
         </nav>
 
         <div className="mt-auto p-6 space-y-4">
-          <button onClick={() => navigate("/home")} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/5 text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:text-white hover:bg-white/5 transition-all">
-            <Globe size={14} /> Live Site
-          </button>
-          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-[0.2em]">
-            <LogOut size={16} /> Terminal Out
-          </button>
+          <button onClick={() => navigate("/home")} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/5 text-[10px] font-bold text-slate-500 hover:text-white transition-all uppercase"><Globe size={14} /> Live Site</button>
+          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-[10px] font-black uppercase tracking-widest"><LogOut size={16} /> Terminal Out</button>
         </div>
       </aside>
 
-      {/* --- CONTENT AREA --- */}
+      {/* MAIN CONTENT */}
       <main className="flex-1 lg:ml-72 p-6 lg:p-12 overflow-y-auto mt-16 lg:mt-0">
-        
-        <div className="flex justify-between items-start mb-10 lg:mb-16">
-          <div>
-            <h2 className="text-3xl lg:text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
-              {activeTab === 'users' && 'User Registry'}
-              {activeTab === 'workbooks' && 'Library Assets'}
-              {activeTab === 'lightlanguage' && 'Audio Transmissions'}
-            </h2>
-            <p className="text-slate-500 text-[10px] lg:text-xs font-bold tracking-[0.4em] uppercase mt-4">Command Center / {activeTab}</p>
-          </div>
-        </div>
+        <h2 className="text-3xl lg:text-5xl font-black text-white tracking-tighter uppercase italic mb-10">
+          {activeTab === 'users' ? 'User Registry' : activeTab === 'workbooks' ? 'Library Assets' : 'Audio Transmissions'}
+        </h2>
 
-        {/* 1. USERS REGISTRY */}
         {activeTab === "users" && (
-          <div className="bg-[#0c0816] border border-white/5 rounded-[30px] lg:rounded-[40px] overflow-hidden shadow-3xl animate-in fade-in slide-in-from-bottom-4">
-             <div className="overflow-x-auto">
-               <table className="w-full text-left border-collapse min-w-[600px]">
-                  <thead>
-                    <tr className="bg-white/[0.02] text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em]">
-                      <th className="p-6 lg:p-10">Soul Name</th>
-                      <th className="p-6 lg:p-10">Identity (Email)</th>
-                      <th className="p-6 lg:p-10 text-right">Access</th>
+          <div className="bg-[#0c0816] border border-white/5 rounded-[30px] overflow-hidden">
+             <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-white/[0.02] text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em]">
+                    <th className="p-6">Soul Name</th>
+                    <th className="p-6">Identity</th>
+                    <th className="p-6 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {users.map(u => (
+                    <tr key={u._id} className="group hover:bg-white/[0.01]">
+                      <td className="p-6 text-white font-bold">{u.name}</td>
+                      <td className="p-6 text-slate-500">{u.email}</td>
+                      <td className="p-6 text-right">
+                        <button onClick={() => deleteItem('user', u._id)} className="p-3 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all"><Trash2 size={18} /></button>
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {users.map(u => (
-                      <tr key={u._id} className="group hover:bg-white/[0.01] transition-all">
-                        <td className="p-6 lg:p-10 text-white font-bold tracking-tight">{u.name}</td>
-                        <td className="p-6 lg:p-10 text-slate-500 font-medium">{u.email}</td>
-                        <td className="p-6 lg:p-10 text-right">
-                          <button onClick={() => deleteItem('user', u._id)} className="p-4 bg-red-500/5 text-red-500 rounded-2xl hover:bg-red-500 hover:text-white transition-all lg:opacity-0 group-hover:opacity-100">
-                            <Trash2 size={20} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-               </table>
-             </div>
+                  ))}
+                </tbody>
+             </table>
           </div>
         )}
 
-        {/* 2. WORKBOOKS / LIBRARY */}
         {activeTab === "workbooks" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 animate-in fade-in zoom-in-95">
-             <div className="lg:col-span-4 order-2 lg:order-1">
-                <div className="bg-[#0c0816] p-8 rounded-[32px] border border-white/10 sticky top-12 shadow-2xl">
-                   <h3 className="text-white text-lg font-black italic mb-6 flex items-center gap-3">
-                      <Plus className="text-indigo-500" size={20} /> New Workbook
-                   </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+             <div className="lg:col-span-4">
+                <div className="bg-[#0c0816] p-8 rounded-[32px] border border-white/10 sticky top-12">
+                   <h3 className="text-white text-lg font-black italic mb-6">New Workbook</h3>
                    <form onSubmit={handleAddWorkbook} className="space-y-5">
-                      <input type="text" placeholder="BOOK TITLE" className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white font-bold outline-none focus:border-indigo-500/50" value={newBook.title} onChange={e => setNewBook({...newBook, title: e.target.value})} required />
-                      <input type="number" placeholder="PRICE (₹)" className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white font-bold outline-none focus:border-indigo-500/50" value={newBook.price} onChange={e => setNewBook({...newBook, price: e.target.value})} required />
+                      <input type="text" placeholder="BOOK TITLE" className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white outline-none focus:border-indigo-500" value={newBook.title} onChange={e => setNewBook({...newBook, title: e.target.value})} required />
+                      <input type="number" placeholder="PRICE (₹)" className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white outline-none focus:border-indigo-500" value={newBook.price} onChange={e => setNewBook({...newBook, price: e.target.value})} required />
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="relative h-24 border-2 border-dashed border-white/5 rounded-xl flex items-center justify-center bg-white/[0.02]">
+                        <div className="relative h-24 border-2 border-dashed border-white/5 rounded-xl flex items-center justify-center bg-white/[0.02] overflow-hidden">
                            <input type="file" accept="image/*" onChange={(e) => { setImageFile(e.target.files[0]); setPreview(URL.createObjectURL(e.target.files[0])); }} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                           {preview ? <img src={preview} className="w-full h-full object-cover rounded-xl" /> : <ImageIcon size={18} className="text-slate-600" />}
+                           {preview ? <img src={preview} className="w-full h-full object-cover" /> : <ImageIcon size={20} className="text-slate-600" />}
                         </div>
                         <div className="relative h-24 border-2 border-dashed border-white/5 rounded-xl flex items-center justify-center bg-white/[0.02]">
                            <input type="file" accept="application/pdf" onChange={(e) => setPdfFile(e.target.files[0])} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                           <FileText size={18} className={pdfFile ? "text-green-500" : "text-slate-600"} />
+                           <FileText size={20} className={pdfFile ? "text-green-500" : "text-slate-600"} />
                         </div>
                       </div>
-                      <textarea placeholder="Brief description..." className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white h-20 resize-none outline-none" value={newBook.description} onChange={e => setNewBook({...newBook, description: e.target.value})}></textarea>
-                      <button type="submit" disabled={isUploading} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl text-[10px] text-white font-black uppercase tracking-widest shadow-xl">
-                        {isUploading ? <Loader2 className="animate-spin mx-auto" /> : "Publish Workbook"}
+                      <textarea placeholder="Description..." className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white h-20 resize-none outline-none" value={newBook.description} onChange={e => setNewBook({...newBook, description: e.target.value})}></textarea>
+                      
+                      {/* PREMIMUM WORKBOOK BUTTON */}
+                      <button type="submit" disabled={isUploading} className={`group relative w-full py-4 rounded-xl overflow-hidden transition-all duration-500 ${isUploading ? "bg-slate-800 cursor-not-allowed" : "bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right hover:shadow-[0_0_20px_rgba(79,70,229,0.4)]"}`}>
+                        {isUploading ? <Loader2 className="animate-spin mx-auto text-white" /> : <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Publish Workbook</span>}
                       </button>
                    </form>
                 </div>
              </div>
-             <div className="lg:col-span-8 space-y-4 order-1 lg:order-2">
+             <div className="lg:col-span-8 space-y-4">
                 {workbooks.map(b => (
-                  <div key={b._id} className="group flex flex-col sm:flex-row items-center gap-6 bg-[#0c0816] p-4 rounded-[24px] border border-white/5 hover:border-indigo-500/30 transition-all shadow-xl">
-                     <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src={b.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div key={b._id} className="flex items-center gap-6 bg-[#0c0816] p-4 rounded-[24px] border border-white/5 hover:border-indigo-500/30 transition-all">
+                     <img src={b.image} className="w-20 h-20 rounded-xl object-cover" />
+                     <div className="flex-1">
+                        <h4 className="text-white font-black italic">{b.title}</h4>
+                        <p className="text-slate-500 text-[10px] italic">₹{b.price}</p>
                      </div>
-                     <div className="flex-1 text-center sm:text-left">
-                        <div className="flex flex-col sm:flex-row items-center gap-2">
-                           <h4 className="text-white text-md font-black uppercase tracking-tight italic">{b.title}</h4>
-                           <span className="bg-indigo-500/10 text-indigo-400 text-[8px] font-black px-2 py-0.5 rounded uppercase border border-indigo-500/20">Book</span>
-                        </div>
-                        <p className="text-slate-500 text-[10px] mt-1 line-clamp-1 italic">{b.description}</p>
-                        <span className="text-[10px] font-bold text-indigo-400 mt-2 block">₹{b.price}</span>
-                     </div>
-                     <div className="flex items-center gap-3 pr-2">
-                        <a href={b.pdfUrl || b.pdf} target="_blank" rel="noreferrer" className="w-10 h-10 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/10 text-slate-400"><Eye size={18} /></a>
-                        <button onClick={() => deleteItem('workbook', b._id)} className="w-10 h-10 rounded-full border border-red-500/10 flex items-center justify-center hover:bg-red-500/10 text-red-500"><Trash2 size={18} /></button>
+                     <div className="flex gap-2 pr-2">
+                        <a href={b.pdfUrl} target="_blank" rel="noreferrer" className="p-3 bg-white/5 rounded-full text-slate-400 hover:text-white"><Eye size={18} /></a>
+                        <button onClick={() => deleteItem('workbook', b._id)} className="p-3 bg-red-500/10 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-all"><Trash2 size={18} /></button>
                      </div>
                   </div>
                 ))}
@@ -313,51 +257,43 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* 3. AUDIO TRANSMISSIONS */}
         {activeTab === "lightlanguage" && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 animate-in fade-in zoom-in-95">
-             <div className="lg:col-span-4 order-2 lg:order-1">
-                <div className="bg-[#0c0816] p-8 rounded-[32px] border border-white/10 sticky top-12 shadow-2xl">
-                   <h3 className="text-white text-lg font-black italic mb-6 flex items-center gap-3">
-                     <Mic className="text-purple-500" size={20} /> Transmit Audio
-                   </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+             <div className="lg:col-span-4">
+                <div className="bg-[#0c0816] p-8 rounded-[32px] border border-white/10 sticky top-12">
+                   <h3 className="text-white text-lg font-black italic mb-6">Transmit Audio</h3>
                    <form onSubmit={handleAddAudio} className="space-y-5">
-                      <input type="text" placeholder="AUDIO TITLE" className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white outline-none focus:border-purple-500/50" value={newAudio.title} onChange={e => setNewAudio({...newAudio, title: e.target.value})} required />
-                      <input type="number" placeholder="PRICE (₹)" className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white outline-none focus:border-purple-500/50" value={newAudio.price} onChange={e => setNewAudio({...newAudio, price: e.target.value})} required />
+                      <input type="text" placeholder="AUDIO TITLE" className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white outline-none focus:border-purple-500" value={newAudio.title} onChange={e => setNewAudio({...newAudio, title: e.target.value})} required />
+                      <input type="number" placeholder="PRICE (₹)" className="w-full bg-white/5 border border-white/5 p-4 rounded-xl text-xs text-white outline-none focus:border-purple-500" value={newAudio.price} onChange={e => setNewAudio({...newAudio, price: e.target.value})} required />
                       <div className="grid grid-cols-2 gap-3">
-                        <div className="relative h-24 border-2 border-dashed border-white/5 rounded-xl flex items-center justify-center bg-white/[0.02]">
+                        <div className="relative h-24 border-2 border-dashed border-white/5 rounded-xl flex items-center justify-center bg-white/[0.02] overflow-hidden">
                            <input type="file" accept="image/*" onChange={(e) => { setAudioImage(e.target.files[0]); setAudioPreview(URL.createObjectURL(e.target.files[0])); }} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                           {audioPreview ? <img src={audioPreview} className="h-full w-full object-cover rounded-xl" /> : <ImageIcon size={18} className="text-slate-600" />}
+                           {audioPreview ? <img src={audioPreview} className="w-full h-full object-cover" /> : <ImageIcon size={20} className="text-slate-600" />}
                         </div>
                         <div className="relative h-24 border-2 border-dashed border-white/5 rounded-xl flex items-center justify-center bg-white/[0.02]">
                            <input type="file" accept="audio/*" onChange={(e) => setAudioFile(e.target.files[0])} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
-                           <Music size={18} className={audioFile ? "text-purple-500" : "text-slate-600"} />
+                           <Music size={20} className={audioFile ? "text-purple-500" : "text-slate-600"} />
                         </div>
                       </div>
-                      <button type="submit" disabled={isUploading} className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl text-[10px] text-white font-black uppercase tracking-widest shadow-xl">
-                        {isUploading ? <Loader2 className="animate-spin mx-auto" /> : "Deploy Audio"}
+                      
+                      {/* PREMIUM AUDIO BUTTON */}
+                      <button type="submit" disabled={isUploading} className={`group relative w-full py-4 rounded-xl overflow-hidden transition-all duration-500 ${isUploading ? "bg-slate-800 cursor-not-allowed" : "bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-[length:200%_auto] hover:bg-right hover:shadow-[0_0_20px_rgba(192,38,211,0.4)]"}`}>
+                        {isUploading ? <AudioLines className="animate-pulse mx-auto text-white" /> : <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Deploy Transmission</span>}
                       </button>
                    </form>
                 </div>
              </div>
-             <div className="lg:col-span-8 space-y-4 order-1 lg:order-2">
+             <div className="lg:col-span-8 space-y-4">
                 {audios.map(a => (
-                  <div key={a._id} className="group flex flex-col sm:flex-row items-center gap-8 bg-[#0c0816] p-6 rounded-[32px] border border-white/5 hover:border-purple-500/30 transition-all shadow-xl">
-                     <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0">
-                        <img src={a.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  <div key={a._id} className="flex items-center gap-6 bg-[#0c0816] p-4 rounded-[24px] border border-white/5 hover:border-purple-500/30 transition-all">
+                     <img src={a.image} className="w-20 h-20 rounded-xl object-cover" />
+                     <div className="flex-1">
+                        <h4 className="text-white font-black italic">{a.title}</h4>
+                        <span className="text-[10px] text-purple-400 font-bold">₹{a.price}</span>
                      </div>
-                     <div className="flex-1 text-center sm:text-left">
-                        <h4 className="text-white text-md font-black uppercase tracking-tight italic leading-none">{a.title}</h4>
-                        <div className="flex items-center justify-center sm:justify-start gap-3 mt-2">
-                           <span className="text-[10px] font-black text-purple-400 uppercase bg-purple-500/5 px-2 py-0.5 rounded border border-purple-500/10">High Freq</span>
-                           <span className="text-[10px] text-slate-500 font-bold">₹{a.price}</span>
-                        </div>
-                     </div>
-                     <div className="flex items-center gap-4 pr-4">
-                        <a href={a.audioUrl} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full border border-white/5 flex items-center justify-center hover:bg-white/5 text-slate-500 transition-all">
-                           <Play size={18} fill="currentColor" />
-                        </a>
-                        <button onClick={() => deleteItem('audio', a._id)} className="w-12 h-12 rounded-full border border-red-500/10 flex items-center justify-center hover:bg-red-500/10 text-red-500 transition-all"><Trash2 size={18} /></button>
+                     <div className="flex gap-2 pr-2">
+                        <a href={a.audioUrl} target="_blank" rel="noreferrer" className="p-3 bg-white/5 rounded-full text-slate-400 hover:text-white"><Play size={18} /></a>
+                        <button onClick={() => deleteItem('audio', a._id)} className="p-3 bg-red-500/10 rounded-full text-red-500 hover:bg-red-500 transition-all hover:text-white"><Trash2 size={18} /></button>
                      </div>
                   </div>
                 ))}
@@ -366,13 +302,7 @@ export default function AdminDashboard() {
         )}
       </main>
 
-      {/* Overlay for mobile when menu is open */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[50] lg:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-        ></div>
-      )}
+      {isMobileMenuOpen && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[50] lg:hidden" onClick={() => setIsMobileMenuOpen(false)}></div>}
     </div>
   );
 }
