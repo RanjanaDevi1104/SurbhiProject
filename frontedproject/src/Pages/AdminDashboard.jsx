@@ -45,21 +45,41 @@ export default function AdminDashboard() {
     } catch (err) { console.error(err); }
   };
 
-  const fetchWorkbooks = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/api/all`);
-      const data = await res.json();
-      setWorkbooks(Array.isArray(data) ? data : (data.workbooks || []));
-    } catch (err) { console.error(err); }
-  };
+ const fetchWorkbooks = async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/api/all`);
+    const contentType = res.headers.get("content-type");
+
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await res.text();
+      console.error("Workbooks Non-JSON:", text);
+      return;
+    }
+
+    const data = await res.json();
+    setWorkbooks(Array.isArray(data) ? data : (data.workbooks || []));
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const fetchAudios = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/api/audio/all-audios`);
-      const data = await res.json();
-      setAudios(Array.isArray(data) ? data : (data.audios || []));
-    } catch (err) { console.error(err); }
-  };
+  try {
+    const res = await fetch(`${BASE_URL}/api/audio/all-audios`);
+    const contentType = res.headers.get("content-type");
+
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await res.text();
+      console.error("Audios Non-JSON:", text);
+      return;
+    }
+
+    const data = await res.json();
+    setAudios(Array.isArray(data) ? data : (data.audios || []));
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   // --- DELETE FUNCTION (Unified) ---
   const deleteItem = async (type, id) => {
@@ -100,7 +120,7 @@ export default function AdminDashboard() {
   };
 
   // --- UPLOAD HANDLERS ---
-  const handleAddWorkbook = async (e) => {
+ const handleAddWorkbook = async (e) => {
   e.preventDefault();
 
   if (!imageFile || !pdfFile) {
@@ -117,7 +137,7 @@ export default function AdminDashboard() {
   formData.append("pdf", pdfFile);
 
   try {
-    const res = await fetch(`${BASE_URL}/api/upload`, {
+    const res = await fetch(`${BASE_URL}/api/upload-workbook`, {
       method: "POST",
       headers: {
         token: localStorage.getItem("token"),
@@ -125,7 +145,17 @@ export default function AdminDashboard() {
       body: formData,
     });
 
-    const data = await res.json();
+    const contentType = res.headers.get("content-type");
+
+    let data;
+    if (contentType && contentType.includes("application/json")) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      console.error("Non-JSON Response:", text);
+      throw new Error("Server returned invalid response");
+    }
+
     console.log("UPLOAD RESPONSE:", data);
 
     if (res.ok) {
@@ -146,29 +176,60 @@ export default function AdminDashboard() {
   }
 };
 
-  const handleAddAudio = async (e) => {
-    e.preventDefault();
-    if (!audioImage || !audioFile) return alert("Select Thumbnail and MP3");
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append("title", newAudio.title);
-    formData.append("price", newAudio.price);
-    formData.append("description", newAudio.description);
-    formData.append("image", audioImage); 
-    formData.append("audio", audioFile);     
-    try {
-      const res = await fetch(`${BASE_URL}/api/audio/upload-audio`, {
-        method: "POST", headers: { "token": localStorage.getItem("token") }, body: formData,
-      });
-      if (res.ok) {
-        alert("Transmission Online!");
-        setNewAudio({ title: "", price: "", description: "" });
-        setAudioImage(null); setAudioFile(null); setAudioPreview(null);
-        fetchAudios();
-      }
-    } catch (err) { alert("Audio upload failed"); }
-    finally { setIsUploading(false); }
-  };
+
+ const handleAddAudio = async (e) => {
+  e.preventDefault();
+
+  if (!audioImage || !audioFile) {
+    return alert("Select Thumbnail and MP3");
+  }
+
+  setIsUploading(true);
+
+  const formData = new FormData();
+  formData.append("title", newAudio.title);
+  formData.append("price", newAudio.price);
+  formData.append("description", newAudio.description);
+  formData.append("image", audioImage);
+  formData.append("audio", audioFile);
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/audio/upload-audio`, {
+      method: "POST",
+      headers: {
+        token: localStorage.getItem("token"),
+      },
+      body: formData,
+    });
+
+    const contentType = res.headers.get("content-type");
+
+    let data;
+    if (contentType && contentType.includes("application/json")) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      console.error("Audio Upload Non-JSON Response:", text);
+      throw new Error("Server returned invalid response");
+    }
+
+    if (res.ok) {
+      alert("Transmission Online!");
+      setNewAudio({ title: "", price: "", description: "" });
+      setAudioImage(null);
+      setAudioFile(null);
+      setAudioPreview(null);
+      fetchAudios();
+    } else {
+      alert(data.message || "Audio upload failed");
+    }
+  } catch (err) {
+    console.error("Audio Upload Error:", err);
+    alert("Audio upload failed: " + err.message);
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   const handleLogout = () => { localStorage.clear(); navigate("/"); };
 

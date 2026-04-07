@@ -13,7 +13,7 @@ import AudioRoute from './Router/AudioRoute.js'
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: "*", // Ya apna frontend URL
+  origin: "https://deluxe-sunflower-8b33ad.netlify.app", // Ya apna frontend URL
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "token"] 
 }));
