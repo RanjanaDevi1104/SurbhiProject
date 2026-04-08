@@ -19,8 +19,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // --- Workbook Management Routes ---
 
-router.post("/upload-workbook", upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]), 
-  imagekitMiddleware("admin"), 
+router.post("/upload-workbook", imagekitMiddleware("admin"),  upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pdf', maxCount: 1 }]), 
   Uploadfile
 );
 
