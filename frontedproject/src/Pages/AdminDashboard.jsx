@@ -85,33 +85,68 @@ export default function AdminDashboard() {
 
   // --- UPLOAD WORKBOOK HANDLER ---
   const handleAddWorkbook = async (e) => {
-    e.preventDefault();
-    if (!imageFile || !pdfFile) return alert("Select both Image and PDF");
+  e.preventDefault();
 
-    setIsUploadingBook(true); // START WORKBOOK LOADING
-    const formData = new FormData();
-    formData.append("title", newBook.title);
-    formData.append("price", newBook.price);
-    formData.append("description", newBook.description);
-    formData.append("image", imageFile);
-    formData.append("pdf", pdfFile);
+  if (!imageFile || !pdfFile) {
+    return alert("Select both Image and PDF");
+  }
 
+  setIsUploadingBook(true);
+
+  const formData = new FormData();
+  formData.append("title", newBook.title);
+  formData.append("price", newBook.price);
+  formData.append("description", newBook.description);
+  formData.append("image", imageFile);
+  formData.append("pdf", pdfFile);
+
+  try {
+    console.log("Uploading to:", `${BASE_URL}/api/upload-workbook`);
+    console.log("Token:", localStorage.getItem("token"));
+    console.log("Image file:", imageFile);
+    console.log("PDF file:", pdfFile);
+
+    const res = await fetch(`${BASE_URL}/api/upload-workbook`, {
+      method: "POST",
+      headers: {
+        token: localStorage.getItem("token")
+      },
+      body: formData,
+    });
+
+    console.log("Upload status:", res.status);
+    console.log("Upload ok:", res.ok);
+
+    const text = await res.text();
+    console.log("Raw upload response:", text);
+
+    let data;
     try {
-      const res = await fetch(`${BASE_URL}/api/upload-workbook`, {
-        method: "POST",
-        headers: { "token": localStorage.getItem("token") },
-        body: formData,
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert("Workbook Published!");
-        setNewBook({ title: "", price: "", description: "" });
-        setImageFile(null); setPdfFile(null); setPreview(null);
-        fetchWorkbooks();
-      } else { alert(data.message || "Upload failed"); }
-    } catch (err) { alert("Network Error: " + err.message); } 
-    finally { setIsUploadingBook(false); } // STOP WORKBOOK LOADING
-  };
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error("JSON parse error:", err);
+      alert("Server valid JSON return nahi kar raha.");
+      return;
+    }
+
+    if (res.ok) {
+      alert("Workbook Published!");
+      setNewBook({ title: "", price: "", description: "" });
+      setImageFile(null);
+      setPdfFile(null);
+      setPreview(null);
+      fetchWorkbooks();
+    } else {
+      alert(data.message || data.error || "Upload failed");
+    }
+
+  } catch (err) {
+    console.error("Workbook Upload Error:", err);
+    alert("Network Error: " + err.message);
+  } finally {
+    setIsUploadingBook(false);
+  }
+};
 
   // --- UPLOAD AUDIO HANDLER ---
   const handleAddAudio = async (e) => {
