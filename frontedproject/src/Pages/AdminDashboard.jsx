@@ -84,7 +84,7 @@ export default function AdminDashboard() {
   };
 
   // --- UPLOAD WORKBOOK HANDLER ---
-  const handleAddWorkbook = async (e) => {
+ const handleAddWorkbook = async (e) => {
   e.preventDefault();
 
   if (!imageFile || !pdfFile) {
@@ -114,19 +114,17 @@ export default function AdminDashboard() {
       body: formData,
     });
 
-    console.log("Upload status:", res.status);
-    console.log("Upload ok:", res.ok);
+    console.log("Response status:", res.status);
+    console.log("Response ok:", res.ok);
 
     const text = await res.text();
-    console.log("Raw upload response:", text);
+    console.log("Raw response:", text);
 
-    let data;
+    let data = {};
     try {
       data = JSON.parse(text);
-    } catch (err) {
-      console.error("JSON parse error:", err);
-      alert("Server valid JSON return nahi kar raha.");
-      return;
+    } catch (e) {
+      console.log("Response is not JSON");
     }
 
     if (res.ok) {
@@ -141,7 +139,7 @@ export default function AdminDashboard() {
     }
 
   } catch (err) {
-    console.error("Workbook Upload Error:", err);
+    console.error("FETCH ERROR:", err);
     alert("Network Error: " + err.message);
   } finally {
     setIsUploadingBook(false);

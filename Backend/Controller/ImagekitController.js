@@ -16,49 +16,63 @@ const imagekit = new ImageKit({
 // ==========================================
 export const Uploadfile = async (req, res) => {
   try {
-    // Frontend से सिर्फ ये 3 चीज़ें आएंगी
-    const { title, description, price } = req.body; 
-    const files = req.files; 
+    console.log("========== UPLOAD START ==========");
+    console.log("REQ HEADERS:", req.headers);
+    console.log("REQ BODY:", req.body);
+    console.log("REQ FILES:", req.files);
 
-    // Validation: Check if files exist
+    const { title, description, price } = req.body;
+    const files = req.files;
+
     if (!files || !files.image || !files.pdf) {
-      return res.status(400).json({ message: "Both Image (Thumbnail) and PDF are required" });
+      console.log("❌ Files missing");
+      return res.status(400).json({
+        message: "Both Image (Thumbnail) and PDF are required"
+      });
     }
 
-    console.log("Starting ImageKit Upload...");
+    console.log("✅ Files received");
+    console.log("Image Name:", files.image[0].originalname);
+    console.log("Image Size:", files.image[0].size);
+    console.log("PDF Name:", files.pdf[0].originalname);
+    console.log("PDF Size:", files.pdf[0].size);
 
-    // A. Image (Thumbnail) Upload to ImageKit
+    console.log("🚀 Uploading image to ImageKit...");
     const imageRes = await imagekit.upload({
       file: files.image[0].buffer.toString("base64"),
       fileName: files.image[0].originalname,
       folder: "/workbooks/thumbnails",
     });
+    console.log("✅ Image uploaded:", imageRes.url);
 
-    // B. PDF Upload to ImageKit
+    console.log("🚀 Uploading PDF to ImageKit...");
     const pdfRes = await imagekit.upload({
       file: files.pdf[0].buffer.toString("base64"),
       fileName: files.pdf[0].originalname,
       folder: "/workbooks/pdfs",
     });
+    console.log("✅ PDF uploaded:", pdfRes.url);
 
-    // C. Save to Database
+    console.log("💾 Saving workbook in MongoDB...");
     const saved = await Workbook.create({
       title,
       description,
       price: parseFloat(price) || 0,
       image: imageRes.url,
-      fileId: imageRes.fileId,     
-      pdfUrl: pdfRes.url,          
-      pdfFileId: pdfRes.fileId,    
-      // .env फ़ाइल से PAYMENT_LINK उठाएगा
-      paymentLink: process.env.PAYMENT_LINK, 
+      fileId: imageRes.fileId,
+      pdfUrl: pdfRes.url,
+      pdfFileId: pdfRes.fileId,
+      paymentLink: process.env.PAYMENT_LINK,
     });
 
-    console.log("Workbook Saved to DB Successfully");
+    console.log("✅ Workbook saved in DB");
+    console.log("========== UPLOAD SUCCESS ==========");
+
     res.status(201).json(saved);
 
   } catch (err) {
-    console.error("UPLOAD ERROR DETAILS:", err);
+    console.error("❌ UPLOAD ERROR FULL:", err);
+    console.log("========== UPLOAD FAILED ==========");
     res.status(500).json({ error: "Upload failed: " + err.message });
   }
 };

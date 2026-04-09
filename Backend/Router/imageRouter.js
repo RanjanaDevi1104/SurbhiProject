@@ -13,7 +13,12 @@ import {
 } from "../Controller/PaymentController.js";
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 6 * 1024 * 1024 // 6 MB max per file
+  }
+});
 
 // --- Workbook Management Routes ---
 
