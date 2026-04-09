@@ -13,6 +13,8 @@ const app = express();
 
 app.use(express.json());
 
+console.log("NEW CORS CODE RUNNING");
+
 app.use(cors({
   origin: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
