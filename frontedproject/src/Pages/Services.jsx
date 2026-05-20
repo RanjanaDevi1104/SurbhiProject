@@ -31,7 +31,7 @@ export default function Services() {
       icon: "🖼️",
       duration: "one to one Session(per question)",
       price: "₹5000",
-      desc: "Energy analysis through a photograph to understand emotions, intentions, and hidden vibrations of yourself or others.",
+      desc: "A one-to-one Akashic Record Reading session offering intuitive and soul-level guidance to help you understand emotional patterns, life lessons, and inner blocks connected to your current situation.",
       link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Photo%20Energy%20Reading%20(₹777)",
     },
     {
