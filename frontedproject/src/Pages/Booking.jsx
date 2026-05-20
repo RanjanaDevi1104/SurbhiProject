@@ -4,7 +4,6 @@ export default function Booking() {
   const [selectedService, setSelectedService] = useState("");
 
   const services = [
-    { id: 1, name: "Tarot Reading (30 Min)", price: "₹999", icon: "🔮" },
     { id: 2, name: "Love & Relationship", price: "₹1,499", icon: "💖" },
     { id: 3, name: "Career Guidance", price: "₹1,199", icon: "💼" },
     { id: 4, name: "Emergency/Instant Read", price: "₹1,999", icon: "⚡" },
