@@ -8,7 +8,7 @@ export default function Services() {
       duration: "per question",
       price: "₹555",
       desc: "A deep-dive psychic session to read your energetic signature and provide future foresight via a 1-on-1 call.",
-      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Clairvoyant%20Energy%20Reading%20(₹1555)",
+      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Clairvoyant%20Energy%20Reading%20(₹555)",
     },
     {
       name: "Intuitive & Psychic Reading",
@@ -16,7 +16,7 @@ export default function Services() {
       duration: "per question",
       price: "₹333",
       desc: "Deep insights into your energy field and life patterns through intuitive psychic vision and channelled guidance.",
-      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Intuitive%20Psychic%20Reading%20(₹1222)",
+      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Intuitive%20Psychic%20Reading%20(₹333)",
     },
     {
       name: "Tarot Guidance",
@@ -24,7 +24,7 @@ export default function Services() {
       duration: "per question",
       price: "₹222",
       desc: "Detailed answers and spiritual roadmap using sacred tarot symbolism to navigate your current life situations.",
-      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Tarot%20Guidance%20(₹999)",
+      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Tarot%20Guidance%20(₹222)",
     },
     {
       name: " Akashik Record Reading",
@@ -32,7 +32,7 @@ export default function Services() {
       duration: "one to one Session(per question)",
       price: "₹5000",
       desc: "A one-to-one Akashic Record Reading session offering intuitive and soul-level guidance to help you understand emotional patterns, life lessons, and inner blocks connected to your current situation.",
-      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Photo%20Energy%20Reading%20(₹777)",
+      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Photo%20Energy%20Reading%20(₹5000)",
     },
     {
       name: "Connection Guidance",
@@ -40,7 +40,7 @@ export default function Services() {
       duration: "one to one Session(per question)",
       price: "₹1100",
       desc: "Understanding the soul-level dynamics, karmic lessons, and patterns between you and another soul.",
-      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Connection%20Guidance%20(₹1888)",
+      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Connection%20Guidance%20(₹1100)",
     },
     {
       name: "Starseed Guidance",
@@ -48,7 +48,7 @@ export default function Services() {
       duration: "one to one Session(per question)",
       price: "₹2100",
       desc: "Exploring your cosmic origins, star system connections, and understanding your soul's higher mission on Earth.",
-      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Starseed%20Guidance%20(₹2111)",
+      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Starseed%20Guidance%20(₹2100)",
     },
     {
       name: "Automatic Writing Message",
@@ -56,7 +56,7 @@ export default function Services() {
       duration: "You will receive a written intuitive message based on your question",
       price: "₹222(via text)",
       desc: "Automatic writing is a channeled intuitive guidance where I receive messages through writing from higher energies regarding your Question",
-      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Automatic%20Writing%20Reading%20(₹1111)",
+      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Automatic%20Writing%20Reading%20(₹222)",
     },
   ];
 

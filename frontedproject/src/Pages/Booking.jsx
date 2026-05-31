@@ -25,7 +25,7 @@ export default function Booking() {
     { 
       id: "03", 
       title: "Secure Payment", 
-      desc: "Main aapko UPI (GPay/PhonePe) ya International link share karunga.",
+      desc: "Main aapko UPI (GPay/PhonePe) ya International link share karungi.",
       icon: "💳"
     },
     { 
