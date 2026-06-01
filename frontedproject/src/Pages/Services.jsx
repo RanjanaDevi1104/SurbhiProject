@@ -29,10 +29,10 @@ export default function Services() {
     {
       name: " Akashik Record Reading",
       icon: "🖼️",
-      duration: "one to one Session(per question)",
+      duration: "one to one Session(3 question)",
       price: "₹5000",
       desc: "A one-to-one Akashic Record Reading session offering intuitive and soul-level guidance to help you understand emotional patterns, life lessons, and inner blocks connected to your current situation.",
-      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Photo%20Energy%20Reading%20(₹5000)",
+      link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Akashik%20Record%20Reading%20(₹5000)",
     },
     {
       name: "Connection Guidance",
