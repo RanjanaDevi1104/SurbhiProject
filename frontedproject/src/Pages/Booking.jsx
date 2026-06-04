@@ -4,9 +4,9 @@ export default function Booking() {
   const [selectedService, setSelectedService] = useState("");
 
   const services = [
-    { id: 2, name: "Love & Relationship", price: "₹1,499", icon: "💖" },
-    { id: 3, name: "Career Guidance", price: "₹1,199", icon: "💼" },
-    { id: 4, name: "Emergency/Instant Read", price: "₹1,999", icon: "⚡" },
+    { id: 2, name: "Love & Relationship", price: "₹1,222", Timing:"30min", icon: "💖" },
+    { id: 3, name: "Career Guidance", price: "₹1,333",Timing:"30min", icon: "💼" },
+    { id: 4, name: "Emergency/Instant Read", price: "₹1,555",Timing:"30min", icon: "⚡" },
   ];
 
   const steps = [
@@ -73,6 +73,7 @@ export default function Booking() {
                 <div className="text-3xl mb-4">{s.icon}</div>
                 <h3 className="font-bold text-lg">{s.name}</h3>
                 <p className="text-purple-400 font-medium mt-1">{s.price}</p>
+                <p className="text-purple-400 font-medium mt-1">{s.Timing}</p>
               </div>
             ))}
           </div>
@@ -126,7 +127,7 @@ export default function Booking() {
         {/* --- CALL TO ACTION --- */}
         <div className="text-center">
           <a
-            href={`https://wa.me/919805210692?text=Hello! I want to book ${selectedService || 'a session'}. Please share payment details.`}
+            href={`https://wa.me/919805210692?text=Hello! I want to book ${selectedService || 'a session'}.`}
             className="group relative inline-flex items-center justify-center"
           >
             <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full blur-md opacity-70 group-hover:opacity-100 transition duration-300"></div>

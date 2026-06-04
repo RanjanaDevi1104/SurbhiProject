@@ -3,7 +3,7 @@ import React from 'react';
 export default function Services() {
   const services = [
     {
-      name: "Clairvoyant Energy Reading",
+      name: "Clairvoyance Energy Reading",
       icon: "✨",
       duration: "per question",
       price: "₹555",
@@ -45,7 +45,7 @@ export default function Services() {
     {
       name: "Starseed Guidance",
       icon: "🌟",
-      duration: "one to one Session(per question)",
+      duration: "one to one Session(3 question)",
       price: "₹2100",
       desc: "Exploring your cosmic origins, star system connections, and understanding your soul's higher mission on Earth.",
       link: "https://wa.me/919805210692?text=Hello%20I%20want%20to%20book%20Starseed%20Guidance%20(₹2100)",
